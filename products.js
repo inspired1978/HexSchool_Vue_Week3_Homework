@@ -3,6 +3,7 @@ import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
 let productModal = null;
 let delProductModal = null;
 
+// 建立 Vue 
 createApp({
   data() {
     return {
@@ -11,11 +12,12 @@ createApp({
       products: [],
       isNew: false,
       tempProduct: {
-        imagesUrl: [],
+        imagesUrl: [], // 用於多圖
       },
     }
   },
   mounted() {
+    // 建立 Modal 實體
     productModal = new bootstrap.Modal(document.getElementById('productModal'), {
       keyboard: false
     });
@@ -31,6 +33,7 @@ createApp({
     this.checkAdmin();
   },
   methods: {
+    // 驗證使用者
     checkAdmin() {
       const url = `${this.apiUrl}/api/user/check`;
       axios.post(url)
@@ -42,18 +45,22 @@ createApp({
           window.location = 'login.html';
         })
     },
+    // 取得資料, 有分頁
     getData() {
-      const url = `${this.apiUrl}/api/${this.apiPath}/admin/products/all`;
+      const url = `${this.apiUrl}/api/${this.apiPath}/admin/products`;
       axios.get(url).then((response) => {
         this.products = response.data.products;
+        console.log(this.products);
       }).catch((err) => {
         alert(err.response.data.message);
       })
     },
+    // 新增或更新產品
     updateProduct() {
       let url = `${this.apiUrl}/api/${this.apiPath}/admin/product`;
       let http = 'post';
 
+      // isNew 為 false, 採用 put 更新
       if (!this.isNew) {
         url = `${this.apiUrl}/api/${this.apiPath}/admin/product/${this.tempProduct.id}`;
         http = 'put'
@@ -62,18 +69,21 @@ createApp({
       axios[http](url, { data: this.tempProduct }).then((response) => {
         alert(response.data.message);
         productModal.hide();
+        // 更新完重新取得列表
         this.getData();
       }).catch((err) => {
         alert(err.response.data.message);
       })
     },
     openModal(isNew, item) {
+      // 新增 product  
       if (isNew === 'new') {
         this.tempProduct = {
           imagesUrl: [],
         };
         this.isNew = true;
         productModal.show();
+      // 編輯 product  
       } else if (isNew === 'edit') {
         this.tempProduct = { ...item };
         this.isNew = false;
@@ -83,6 +93,7 @@ createApp({
         delProductModal.show()
       }
     },
+    // 刪除產品
     delProduct() {
       const url = `${this.apiUrl}/api/${this.apiPath}/admin/product/${this.tempProduct.id}`;
 
